@@ -13,7 +13,9 @@ class System:
     self.date = date
   
   def take_html(self):
-    html = requests.get('https://fundamentus.com.br/fii_resultado.php', headers=request_headers).content
+    soup = requests.get('https://fundamentus.com.br/fii_resultado.php', headers=request_headers)
+    print(soup.history)
+    html = soup.content
     return BeautifulSoup(html, 'html.parser')
   
   def take_texts(self, tag):
@@ -75,17 +77,18 @@ class System:
     
 class Filter:
   def __init__(self):
-    self.pvp = 0.007
-    self.dividend_yield = 0.005
-    self.vacancy = 0.10
-    self.min_stock = 7
-    self.max_stock = 20
-    self.value = 1000000
+    self.min_pvp = 0.75
+    self.max_pvp = 2
+    self.dividend_yield = 0.0065
+    self.min_stock = 5
+    self.max_stock = 21
+    self.value = 5000000
     
   def filter_fiis(self, fiis):
-    fiis = fiis[fiis["P/VP"] > self.pvp]
+    print(fiis["P/VP"])
+    fiis = fiis[fiis["P/VP"] > self.min_pvp]
+    fiis = fiis[fiis["P/VP"] < self.max_pvp]
     fiis = fiis[fiis["Dividend Yield"] > self.dividend_yield]
-    fiis = fiis[fiis["Vacância Média"] < self.dividend_yield]
     fiis = fiis[fiis["Cotação"] < self.max_stock]
     fiis = fiis[fiis["Cotação"] > self.min_stock]
     fiis = fiis[fiis["Valor de Mercado"] > self.value]
@@ -93,7 +96,6 @@ class Filter:
     return fiis
   
   def remove_dot(self, series):
-    
     return series.astype(str).str.replace(".", ",")
   
   def format_market_value(self, value):
